@@ -1,0 +1,423 @@
+<link rel="import" href="node_modules/web-presentation/dist/web-presentation.html">
+<link rel="import" href="/x-counter-0.html">
+<link rel="import" href="/x-counter-1.html">
+
+<link rel="stylesheet" href="present.css">
+
+<web-presentation>
+
+  <web-slide-title>
+    <h2> Web Components v1 </h2>
+    <p><a href="http://twitter.com/antono/"> Anton Vasiljev </a></p>
+    <p><a href="https://github.com/antono/"> github.com/antono </a></p>
+  </web-slide-title>
+
+  <web-slide>
+    <ol>
+      <li> <a href="http://w3c.github.io/webcomponents/spec/shadow/"> Shadow DOM </a></li>
+      <li> <a href="http://w3c.github.io/webcomponents/spec/custom/">Custom Elements</a> </li>
+      <li> <a href="https://html.spec.whatwg.org/multipage/scripting.html#the-template-element"> Templates </a></li>
+      <li> <a href="http://w3c.github.io/webcomponents/spec/imports/"> HTML Imports </a></li>
+    </ol>
+  </web-slide>
+
+  <web-slide-title>
+    <h3> Shadow DOM </h3>
+  </web-slide-title>
+
+  <web-slide>
+    <pre>
+      <code>
+&lt;div id=hello&gt;Hello!&lt;/div&gt;
+
+&lt;script&gt;
+var host = document.getElementById('hello');
+var root = host.createShadowRoot();
+root.textContent = 'Привет!';
+&lt;/script&gt;
+
+      </code>
+    </pre>
+  </web-slide>
+
+  <web-slide>
+    <pre>
+      <code>
+&lt;div id=hello&gt;Hello!&lt;/div&gt;
+
+&lt;script&gt;
+const host = document.getElementById('hello');
+const shadow = host.attachShadow({ mode: 'open' });
+shadow.textContent = 'Привет!';
+&lt;/script&gt;
+
+      </code>
+    </pre>
+  </web-slide>
+  
+  <script>
+    class XOpen extends HTMLElement {
+      constructor() {
+        super();
+        this.shadow = this.attachShadow({ mode: 'open' });
+        this.shadow.innerHTML = '<slot></slot>';
+      }
+    }
+    
+    class XClosed extends HTMLElement {
+      constructor() {
+        super();
+        this.shadow = this.attachShadow({ mode: 'closed' });
+        this.shadow.innerHTML = '<slot></slot>';
+      }
+    }
+    
+    customElements.define('x-open', XOpen);
+    customElements.define('x-closed', XClosed);
+  </script>
+  
+  <web-slide>
+    <x-open>
+      { mode: 'open' }
+    </x-open>
+    <br/>
+    <x-closed>
+      { mode: 'closed' }
+    </x-closed>
+  </web-slide>
+
+  <web-slide>
+    host.attachShadow({ mode: 'open' });
+    <br/>
+    host.attachShadow({ mode: 'open' });
+    <br/>
+    // => DOMException
+  </web-slide>
+
+  <web-slide>
+    <pre>
+      <code>
+        document
+          .getElementById('hello')
+          .textContent // => Hello!
+      </code>
+    </pre>
+  </web-slide>
+
+  <web-slide>
+    <pre>
+      <code>
+        #hello::shadow {
+          color: red;
+        }
+      </code>
+    </pre>
+  </web-slide>
+  
+  <web-slide>
+    <pre>
+      <code>
+        /deep/ span {
+          color: red;
+        }
+      </code>
+    </pre>
+  </web-slide>
+  
+  <web-slide>
+    В v1 нет селекторов для проникновения в Shadow DOM.
+  </web-slide>
+  
+  <web-slide>
+    <h2> Слоты </h2>
+    <pre>
+      <code>
+&lt;host&gt;
+  &lt;div class=&quot;first&quot; slot=&quot;first&quot;&gt;Hello&lt;/div&gt;
+  &lt;div class=&quot;last&quot; slot=&quot;last&quot;&gt;World&lt;/div&gt;
+&lt;/host&gt;
+      </code>
+    </pre>
+  </web-slide>
+
+  <web-slide>
+    <h2> Реализация v0 </h2>
+    <pre>
+      <code>
+&lt;!-- shadow tree --&gt;
+&lt;content select=&quot;.first&quot;&gt;&lt;/content&gt;
+&lt;content select=&quot;.last&quot;&gt;&lt;/content&gt;
+      </code>
+    </pre>
+  </web-slide>
+  
+  <web-slide>
+    <h2> Реализация v1 </h2>
+    <pre>
+      <code>
+&lt;!-- shadow tree --&gt;
+&lt;slot name=&quot;first&quot;&gt;&lt;/slot&gt;
+&lt;slot name=&quot;last&quot;&gt;&lt;/slot&gt;
+      </code>
+    </pre>
+  </web-slide>
+  
+  <web-slide>
+    <h2>  </h2>
+    <pre>
+      <code>
+slot.assignedNodes({ flatten: true });
+      </code>
+    </pre>
+  </web-slide>
+  
+  <web-slide>
+    <h2>  </h2>
+    <pre>
+      <code>
+slot.addEventListener('slotchange', (e) => {
+  console.log('fired');
+});
+      </code>
+    </pre>
+  </web-slide>
+  
+  <web-slide>
+    <h2>  </h2>
+    <pre>
+      <code>
+::slotted(h2) {
+  color: red;
+}
+      </code>
+    </pre>
+  </web-slide>
+  
+  
+
+  <web-slide-title>
+    <h3> Custom Elements </h3>
+  </web-slide-title>
+
+  <web-slide>
+    <h3> Реализация v0 </h3>
+    <pre>
+      <code>
+var XCounter = Object.create(HTMLElement.prototype);
+
+document.registerElement('x-counter', {
+  prototype: XCounter
+});
+      </code>
+    </pre>
+  </web-slide>
+  
+  <web-slide>
+    <h3> Реализация v1 </h3>
+    <pre>
+      <code>
+class XCounter extends HTMLElment {}
+
+customElements.define('x-counter', XCounter);
+      </code>
+    </pre>
+  </web-slide>
+
+  <web-slide>
+    <h3> Использование (v0, v1) </h3>
+    <pre>
+      <code>
+document.body.appendChild(new XCounter());
+      </code>
+    </pre>
+  </web-slide>
+
+  <web-slide>
+    <h3> Использование (v0, v1) </h3>
+    <pre>
+      <code>
+&lt;x-counter&gt;&lt;/x-counter&gt;
+      </code>
+    </pre>
+  </web-slide>
+
+  <web-slide>
+    <h3> Жизненный цикл (v0) </h3>
+    <pre>
+      <code class="small">
+var XCounter = Object.create(HTMLElement.prototype, {
+  createdCallback() {},
+  attachedCallback() {},
+  detachedCallback() {},
+  attributeChangedCallback(attrName, oldVal, newVal) {}
+})
+      </code>
+    </pre>
+  </web-slide>
+
+  <web-slide>
+    <h3> Жизненный цикл (v1) </h3>
+    <pre>
+      <code class="small">
+class XCounter extends HTMLElement {
+  static get observedAttributes() { return [...] }
+  constructor() {},
+  connectedCallback() {},
+  disconnectedCallback() {},
+  attributeChangedCallback(attrName, oldValue, newValue, namespace) {},
+  adoptedCallback(oldDocument, newDocument) {},
+})
+      </code>
+    </pre>
+  </web-slide>
+
+  <web-slide>
+    <pre>
+      <code class="small">
+var proto = Object.create(HTMLElement.prototype, {
+  createdCallback:  function () {},
+  attachedCallback: function () {},
+  detachedCallback: function () {},
+  attributeChangedCallback: function (attr, oldVal, newVal) {}
+})
+      </code>
+    </pre>
+  </web-slide>
+
+  <web-slide-title>
+    <h2> Templates </h2>
+  </web-slide-title>
+
+  <web-slide>
+    <pre>
+      <code class="small">
+&lt;template id=&quot;tpl&quot;&gt;
+  &lt;style&gt;
+    span {
+      color: green;
+      font-weight: bold;
+    }
+  &lt;/style&gt;
+
+  &lt;span&gt; click me! &lt;/span&gt;
+&lt;/template&gt;
+      </code>
+    </pre>
+  </web-slide>
+
+  <web-slide>
+    <pre>
+      <code class="small">
+const tpl = document.getElementById('tpl');
+const clone = tpl.content.cloneNode(true);
+
+document.body.appendChild(clone);
+      </code>
+    </pre>
+  </web-slide>
+
+  <web-slide>
+    <pre>
+      <code class="small">
+<s>&lt;script type=&quot;text/template&quot;&gt;&lt;/script&gt;</s>
+      </code>
+    </pre>
+  </web-slide>
+
+  <web-slide-title>
+    <h3> HTML Imports </h3>
+  </web-slide-title>
+
+  <web-slide>
+    <pre>
+      <code class="small">
+&lt;link rel=&quot;import&quot; href=&quot;x-counter.html&quot;&gt;
+      </code>
+    </pre>
+  </web-slide>
+
+  <web-slide>
+    <pre>
+      <code>
+        document.currentScript.ownerDocument;
+      </code>
+    </pre>
+  </web-slide>
+
+  <web-slide>
+    <pre>
+      <code class="small">
+var importee = document.currentScript.ownerDocument;
+
+proto.createdCallback = function () {
+  var tpl   = importee.querySelector('#tpl');
+  var clone = tpl.content.cloneNode(true);
+
+  this.createShadowRoot();
+  this.shadowRoot.appendChild(clone);
+}
+      </code>
+    </pre>
+  </web-slide>
+
+  <web-slide>
+    <pre>
+      <code class="small">
+proto.inc = function () {
+  this.count += 1;
+  this.shadowRoot.querySelector('span').textContent = this.count;
+}
+      </code>
+    </pre>
+  </web-slide>
+
+
+  <web-slide>
+    <pre>
+      <code>
+&lt;x-counter-0&gt;Hello&lt;/x-counter-0&gt;
+      </code>
+    </pre>
+    <style>
+      x-counter-0 {
+        display: block;
+        border: 1px solid red;
+        padding: 20px;
+        width: 50%;
+        color: red;
+      }
+    </style>
+    <x-counter-0>Hello v0</x-counter-0>
+  </web-slide>
+  
+  <web-slide>
+    <pre>
+      <code>
+&lt;x-counter-1&gt;Hello&lt;/x-counter-1&gt;
+      </code>
+    </pre>
+    <style>
+      x-counter-1 {
+        display: block;
+        border: 1px solid green;
+        padding: 20px;
+        width: 50%;
+        color: red;
+      }
+    </style>
+    <x-counter-1>Hello v1</x-counter-1>
+  </web-slide>
+
+  <web-slide>
+    bower install webcomponentsjs
+  </web-slide>
+
+  <web-slide-title>
+		<h2> Questions? </h2>
+    <a href="http://twitter.com/antono">http://twitter.com/antono</a>
+    <a href="http://webcomponents.org/">http://webcomponents.org/</a>
+  </web-slide-title>
+
+  <web-presentation-progress></web-presentation-progress>
+  <web-presentation-keyboardcontrols></web-presentation-keyboardcontrols>
+</web-presentation>

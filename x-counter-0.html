@@ -1,0 +1,45 @@
+<template id="tpl">
+  <style>
+    span {
+      color: green;
+      font-weight: bold;
+    }
+  </style>
+
+  <span> click me! </span>
+</template>
+
+<script>
+var proto = Object.create(HTMLElement.prototype);
+
+Object.defineProperty(proto, "count", {
+  value: 0,
+  writable: true
+});
+
+proto.inc = function () {
+  this.count += 1;
+  this.shadowRoot.querySelector('span').textContent = this.count;
+}
+
+var importee = document.currentScript.ownerDocument;
+
+proto.createdCallback = function () {
+  var tpl = importee.querySelector('#tpl');
+
+  this.createShadowRoot();
+  this.shadowRoot.appendChild(tpl.content.cloneNode(true));
+
+  this.addEventListener('click', this.inc.bind(this));
+}
+
+proto.attributeChangedCallback = function (attr, oldVal, newVal) {
+  if (attr === 'count') {
+    this.count = parseInt(newVal);
+  }
+}
+
+document.registerElement('x-counter-0', { prototype: proto });
+</script>
+
+<x-counter-0 count="10">Hello</x-counter-0>

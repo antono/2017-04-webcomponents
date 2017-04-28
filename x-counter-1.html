@@ -1,0 +1,48 @@
+<template id="tpl">
+  <style>
+    span {
+      color: green;
+      font-weight: bold;
+    }
+  </style>
+
+  <span> click me! </span>
+</template>
+
+<script>
+const owner = document.currentScript.ownerDocument;
+const tpl = owner.querySelector('#tpl');
+
+class XCounter extends HTMLElement {
+  constructor() {
+    super();
+    this.count = 0;
+    this.shadow = this.attachShadow({ mode: 'open' });
+  }
+  
+  connectedCallback() {
+    this.shadow.appendChild(tpl.content.cloneNode(true));
+    this.addEventListener('click', this.increment.bind(this));
+    this.render();
+  }
+  
+  increment() {
+    this.count += 1;
+    this.render();
+  }
+  
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (attr === 'count') {
+      this.render();
+    }
+  }
+  
+  render() {
+    this.shadow.querySelector('span').textContent = this.count;
+  }
+}
+
+customElements.define('x-counter-1', XCounter);
+</script>
+
+<x-counter-1 count="10">Hello</x-counter-1>
